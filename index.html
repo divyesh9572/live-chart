@@ -8,8 +8,8 @@
       body {
         /* height: 100vh; */
         width: 100vw;
-        font-family: "Arial", sans-serif;
-        background-color: #f4f4f4;
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #f7f7f7;
         margin: 0;
         display: flex;
         justify-content: center;
@@ -19,6 +19,14 @@
         overflow-y: scroll;
       }
 
+      rect,
+      line {
+        cursor: crosshair;
+        stroke: black;
+        fill: none;
+        stroke-width: 2;
+        fill-opacity: 0.7;
+      }
       #tableContainer {
         width: 80vw;
         height: fit-content;
@@ -31,7 +39,7 @@
 
       .beautiful-table th,
       .beautiful-table td {
-        border: 1px solid #ddd;
+        border: 1px solid #0f0505;
         padding: 12px;
         text-align: left;
       }
@@ -59,12 +67,13 @@
       }
 
       .chart-header {
-        background-color: #4caf50;
+        background-color: #2db950;
         color: #fff;
         padding: 15px;
         text-align: center;
         font-size: 24px;
         font-weight: bold;
+        border-radius: 8px 8px 0 0;
       }
 
       .chart-controls {
@@ -73,13 +82,67 @@
         align-items: center;
         padding: 15px;
         margin-bottom: 5px;
+        background-color: #fff;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      button {
+        padding: 10px;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: background-color 0.3s;
+      }
+
+      .loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 20px;
+        font-size: 18px;
       }
 
       .loading-indicator {
         display: none;
-        color: #b92d2d;
+        color: #4caf50;
         margin-left: 10px;
         font-weight: bold;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+      input[type="date"] {
+        padding: 8px;
+        margin-left: 10px;
+        border-radius: 4px;
+        border: 1px solid #0f0505;
+      }
+
+      input[type="text"] {
+        padding: 8px;
+        margin-left: 10px;
+        border-radius: 4px;
+        border: 1px solid #0f0505;
+      }
+      input[type="date"],
+      input[type="text"],
+      select {
+        transition: border-color 0.3s ease;
+      }
+
+      input[type="date"]:focus,
+      input[type="text"]:focus,
+      select:focus {
+        border-color: #2db950;
+      }
+      select {
+        padding: 8px;
+        margin: 0 10px;
+        color: #28cf12;
       }
 
       canvas {
@@ -87,64 +150,227 @@
         width: 100%;
         height: fit-content;
       }
+      .login-container {
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        width: 300px;
+        margin-top: 200px;
+      }
+
+      .login-container h2 {
+        color: #2db950;
+        margin-bottom: 20px;
+      }
+
+      .login-container label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      .login-container input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 16px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .login-container button {
+        background-color: #2db950;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+
+      .login-container button:hover {
+        background-color: #238c43;
+      }
+
+      #loginStatus {
+        color: #d9534f;
+        margin-top: 10px;
+      }
+      .login-container {
+        animation: fadeIn 2s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      #mainContent {
+        animation: fadeIn 1.5s ease-in-out;
+        display: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
   </head>
 
   <body>
-    <!-- Create a canvas element to render the chart -->
-    <div class="chart-container">
-      <div class="chart-header">Line Chart</div>
-      <div class="chart-controls">
-        <input type="date" id="startDate" style="color: #b92d2d" />
-        <span style="margin: 0 10px">To</span>
-        <input
-          type="date"
-          id="endDate"
-          style="color: #2db950; margin: 0 10px"
-        />
-        <input type="text" placeholder="Enter a Name" id="name">
+    <div class="login-container">
+      <h2>Login</h2>
+      <label for="email">Email:</label>
+      <input type="email" id="email" required />
 
-        <label for="mySelect">Select Period Of: </label>
-        <select style="margin: 0 10px; color: #28cf12" id="mySelect">
-          <option value="option1" selected>Monthly</option>
-          <option value="option2">Weekly</option>
-          <option value="option3">Daily</option>
-        </select>
-        <button
-          type="button"
-          onclick="generateDateChart()"
-          style="color: #4caf50"
-        >
-          Generate Date Chart
-        </button>
-        <div id="loadingIndicator" class="loading-indicator">
-          Wait, Chart is Loading...
+      <label for="password">Password:</label>
+      <input type="password" id="password" required />
+
+      <button onclick="login()">Login</button>
+      <p id="loginStatus"></p>
+    </div>
+
+    <div id="mainContent" style="display: none">
+      <div
+        style="position: relative; font-size: xx-large; color: #2db950"
+        id="Error"
+      ></div>
+      <!-- Create a canvas element to render the chart -->
+      <div class="chart-container" id="DDDD" style="visibility: visible">
+        <div class="chart-header">Line Chart</div>
+        <div class="chart-controls">
+          <button onclick="DrawToolActive(1700,720)">Enable Live tools</button>
+          <button onclick="DrawToolActiveClear()" style="margin-left: 0.4rem">
+            Clear
+          </button>
+
+          <input
+            type="date"
+            style="margin-left: 0.4rem"
+            id="startDate"
+            style="color: #b92d2d"
+          />
+          <span style="margin: 0 10px">To</span>
+          <input
+            type="date"
+            id="endDate"
+            style="color: #2db950; margin: 0 10px"
+          />
+          <input type="text" placeholder="Enter a Name" id="name" />
+
+          <label for="mySelect" style="margin-left: 0.4ren"
+            >Select Period Of:
+          </label>
+          <select style="margin: 0 10px; color: #28cf12" id="mySelect">
+            <option value="option1" selected>Monthly</option>
+            <option value="option2">Weekly</option>
+            <option value="option3">Daily</option>
+          </select>
+          <button
+            type="button"
+            onclick="generateDateChart()"
+            style="margin-left: 0.4rem"
+          >
+            Generate Date Chart
+          </button>
+          <button
+            style="margin-left: 0.4rem; visibility: hidden"
+            id="drawRectangleBtn"
+          >
+            Draw Rectangle
+          </button>
+          <button
+            style="margin-left: 0.4rem; visibility: hidden"
+            id="drawLineBtn"
+          >
+            Draw Line
+          </button>
+          <div id="loadingIndicator" class="loading-indicator">
+            Wait, Chart is Loading...
+          </div>
+        </div>
+        <!-- style="position: relative; z-index: 1" -->
+        <div width="1000" height="400" style="position: relative; z-index: 1">
+          <canvas id="lineChart"></canvas>
+          <div
+            id="chart-containerdraw"
+            style="position: absolute; top: 0; left: 0; z-index: 2"
+          ></div>
         </div>
       </div>
+      <div id="tableContainer" style="visibility: visible">
+        <table id="dataTable" class="beautiful-table">
+          <!-- Table header -->
+          <thead>
+            <tr style="color: #c05656">
+              <th>Date</th>
+              <th>Value</th>
+              <th>Loss/Profit</th>
+              <th>Monowave</th>
+              <th>Retracement (%)</th>
+            </tr>
+          </thead>
+          <!-- Table body will be dynamically generated using JavaScript -->
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
 
-      <canvas id="lineChart" width="1000" height="400"></canvas>
-    </div>
-    <div id="tableContainer">
-      <table id="dataTable" class="beautiful-table">
-        <!-- Table header -->
-        <thead>
-          <tr style="color: #c05656">
-            <th>Date</th>
-            <th>Value</th>
-            <th>Loss/Profit</th>
-            <th>Monowave</th>
-            <th>Retracement (%)</th>
-          </tr>
-        </thead>
-        <!-- Table body will be dynamically generated using JavaScript -->
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
     <script>
+      function login() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        if (
+          email === "harshadmashru@gmail.com" &&
+          password === "Harshad@4172"
+        ) {
+          sessionStorage.setItem("email", email);
+          sessionStorage.setItem("password", password);
+          setTimeout(() => {
+            document.querySelector(".login-container").style.display = "none";
+            document.getElementById("mainContent").style.display = "block";
+          }, 100);
+        } else {
+          document.getElementById("loginStatus").textContent =
+            "Invalid email or password. Please try again.";
+        }
+      }
+      window.onload = function () {
+        console.log("called");
+        const isAuthenticated = sessionStorage.getItem("email");
+        console.log(isAuthenticated);
+        if (isAuthenticated) {
+          document.getElementById("loginStatus").textContent =
+            "You are already logged in.";
+          document.querySelector(".login-container").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+        }
+      };
+      let openPrices = new Array();
+      let LabelsArray = new Array();
+      let rectangles = []; // New array to store rectangles
       let a = document.getElementById("Attached");
+      let cd = document.getElementById("Error");
+      let chartContainer = document.getElementById("chart-containerdraw");
+
+      // Function to toggle the visibility of drawing tools
 
       function fillTable(
         dateArrayReceive,
@@ -228,10 +454,11 @@
           tableBody.appendChild(row);
         });
       }
-      async function fetchData(apiOptions, stDate, enDate,nameInput) {
+      async function fetchData(apiOptions, stDate, enDate, nameInput) {
         try {
           const response = await fetch(
             `https://sharemarketn.onrender.com/api/fetchData/${apiOptions}?startDate=${stDate}&endDate=${enDate}&nameInput=${nameInput}`
+            // `http://localhost:8080/api/fetchData/${apiOptions}?startDate=${stDate}&endDate=${enDate}&nameInput=${nameInput}`
           );
 
           const data = await response.json();
@@ -243,12 +470,20 @@
       }
 
       // Function to draw a line chart for Open and Close values
-      async function drawLineChart(apiOptions, stDate, enDate,nameInput) {
+      async function drawLineChart(apiOptions, stDate, enDate, nameInput) {
         document.getElementById("loadingIndicator").style.display = "block"; // Show loading indicator
         const canvas = document.getElementById("lineChart");
 
-        const apiData = await fetchData(apiOptions, stDate, enDate,nameInput);
-        let openPrices = new Array();
+        const apiData = await fetchData(apiOptions, stDate, enDate, nameInput);
+        if (apiData.length == 0) {
+          document.getElementById("DDDD").style.visibility = "hidden";
+          document.getElementById("tableContainer").style.visibility = "hidden";
+          const a = document.createElement("div");
+          a.textContent = "Invalid Input.... Please Write Right";
+          cd.appendChild(a);
+          document.getElementById("Error").style.marginTop = "250px";
+        }
+        openPrices = new Array();
         const newDates = new Array();
         let lossProfitArray = new Array();
         let filllossProfitArray = 0;
@@ -362,7 +597,7 @@
         }
 
         //Retracement
-        let LabelsArray = new Array();
+        LabelsArray = new Array();
         let dddd = 0;
         let RetracementArray = new Array();
         for (let i = 0; i <= index; i++) {
@@ -413,11 +648,26 @@
           }
         }
 
+        LINEDRAWCHART(openPrices, LabelsArray);
+        document.getElementById("loadingIndicator").style.display = "none"; // Hide loading indicator
+        canvas.style.display = "block";
+        fillTable(
+          newDates,
+          openPrices,
+          lossProfitArray,
+          MonowaveArray,
+          RetracementArray
+        );
+      }
+
+      function LINEDRAWCHART(openPrices, LabelsArray) {
         const ctx = document.getElementById("lineChart").getContext("2d");
+        document
+          .getElementById("lineChart")
+          .addEventListener("hover", () => {});
         if (window.myChart) {
           window.myChart.destroy();
         }
-
         // Create the chart
         window.myChart = new Chart(ctx, {
           type: "line",
@@ -452,6 +702,7 @@
             },
             plugins: {
               tooltip: {
+                zIndex: 1000,
                 callbacks: {
                   label: function (context) {
                     const dateObject = LabelsArray[context.dataIndex].date;
@@ -473,24 +724,13 @@
             },
           },
         });
-        document.getElementById("loadingIndicator").style.display = "none"; // Hide loading indicator
-        canvas.style.display = "block";
-        fillTable(
-          newDates,
-          openPrices,
-          lossProfitArray,
-          MonowaveArray,
-          RetracementArray
-        );
       }
 
       function generateDateChart() {
         const startDate = document.getElementById("startDate").value;
         const endDate = document.getElementById("endDate").value;
         let selectedOption = document.getElementById("mySelect").value;
-        let nameInput = document.getElementById('name').value;
-
-
+        let nameInput = document.getElementById("name").value;
         if (selectedOption == "option2") {
           selectedOption = "weekly";
         }
@@ -500,15 +740,144 @@
         if (selectedOption == "option1") {
           selectedOption = "monthly";
         }
-
         // Call the function to draw the line chart with these values
-        drawLineChart(selectedOption, startDate, endDate,nameInput);
+        drawLineChart(selectedOption, startDate, endDate, nameInput);
+        // DrawToolActive();
       }
       function clearDateInputs() {
         document.getElementById("startDate").value = "";
         document.getElementById("endDate").value = "";
       }
-      window.onload = clearDateInputs;
+      // window.onload = clearDateInputs();
+
+      let svg;
+      let currentShape;
+      let ab;
+      let b;
+      function DrawToolActive(w, h) {
+        document.getElementById("drawRectangleBtn").style.visibility =
+          "visible";
+        document.getElementById("drawLineBtn").style.visibility = "visible";
+
+        const width = w;
+        const height = h;
+        svg = d3
+          .select("#chart-containerdraw")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+        let isDrawing = false;
+        currentShape;
+
+        // Function to make the chart container listen for mouse events
+        function enableDrawing(shapeType) {
+          if (isDrawing) {
+            // If already drawing, stop drawing and remove event listeners
+            isDrawing = false;
+            svg.on("mousedown", null);
+            svg.on("mousemove", null);
+            svg.on("mouseup", null);
+
+            // Hide the overlay by setting its opacity to 0
+            d3.select("#overlay").style("opacity", 0);
+
+            return;
+          }
+          // Create a transparent overlay to prevent the drawing tools from capturing events
+          const overlay = svg
+            .append("rect")
+            .attr("id", "overlay")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("fill", "none")
+            .attr("pointer-events", "all") // Make the overlay clickable
+            .style("opacity", 1);
+          // Initially set opacity to 1
+
+          svg.on("mousedown", function () {
+            isDrawing = true;
+            const [x, y] = d3.mouse(this);
+
+            if (shapeType === "rectangle") {
+              currentShape = svg
+                .append("rect")
+                .attr("x", x)
+                .attr("y", y)
+                .attr("width", 20)
+                .attr("height", 20)
+                .attr("stroke", "black")
+                .attr("stroke-width", 2)
+                .attr("fill", "none");
+              rectangles.push({
+                x: x,
+                y: y,
+                width: 20,
+                height: 20,
+              });
+            } else if (shapeType === "line") {
+              currentShape = svg
+                .append("line")
+                .attr("x1", x)
+                .attr("y1", y)
+                .attr("x2", x + 20)
+                .attr("y2", y)
+                .attr("stroke", "black")
+                .attr("stroke-width", 2);
+            }
+            d3.event.stopPropagation();
+          });
+
+          svg.on("mousemove", function () {
+            console.log("mousemove");
+            if (!isDrawing) return;
+            const [x, y] = d3.mouse(this);
+            ab = x;
+            b = y;
+            if (shapeType === "rectangle") {
+              const width = x - +currentShape.attr("x");
+              const height = y - +currentShape.attr("y");
+              currentShape.attr("width", width).attr("height", height);
+            } else if (shapeType === "line") {
+              currentShape.attr("x2", x).attr("y2", y);
+            }
+            d3.event.stopPropagation();
+          });
+
+          svg.on("mouseup", function () {
+            console.log("mouseup");
+
+            isDrawing = false;
+
+            // Hide the overlay by setting its opacity to 0 once drawing is completed
+            overlay.style("opacity", 0);
+
+            d3.event.stopPropagation();
+          });
+        }
+
+        // Buttons to enable drawing mode for rectangles and lines
+        d3.select("#drawRectangleBtn").on("click", function () {
+          console.log("rectangle");
+          enableDrawing("rectangle");
+        });
+
+        d3.select("#drawLineBtn").on("click", function () {
+          console.log("line");
+          enableDrawing("line");
+        });
+      }
+      function DrawToolActiveClear() {
+        document.getElementById("drawRectangleBtn").style.visibility = "hidden";
+        document.getElementById("drawLineBtn").style.visibility = "hidden";
+        d3.select("#chart-containerdraw svg").remove();
+        svg.on("mousedown", null);
+        svg.on("mousemove", null);
+        svg.on("mouseup", null);
+        svg.on("mouseover", null);
+        svg.on("mouseout", null);
+        LINEDRAWCHART(openPrices, LabelsArray);
+      }
     </script>
   </body>
 </html>
