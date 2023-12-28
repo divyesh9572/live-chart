@@ -2747,10 +2747,12 @@
 
         function searchItems() {
           const searchTerm = searchInput.value.toLowerCase();
+          console.log(searchTerm);
           searchResults.innerHTML = ""; // Clear previous results
 
           items.forEach((item) => {
-            const itemName = item.symbol.toLowerCase();
+            const itemName = item.name.toLowerCase();
+            console.log(itemName);
             if (itemName.includes(searchTerm)) {
               const listItem = document.createElement("li");
               listItem.textContent = item.name;
