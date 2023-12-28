@@ -338,8 +338,9 @@
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
         if (
-          email === "harshadmashru@gmail.com" &&
-          password === "Harshad@4172"
+          (email === "harshadmashru@gmail.com" ||
+            email === "divyeshbarvadiya6@gmail.com") &&
+          (password === "Harshad@4172" || password === "9572")
         ) {
           sessionStorage.setItem("email", email);
           sessionStorage.setItem("password", password);
@@ -353,9 +354,7 @@
         }
       }
       window.onload = function () {
-        console.log("called");
         const isAuthenticated = sessionStorage.getItem("email");
-        console.log(isAuthenticated);
         if (isAuthenticated) {
           document.getElementById("loginStatus").textContent =
             "You are already logged in.";
@@ -377,22 +376,44 @@
         openPrices,
         lossProfitArray,
         MonowaveArray,
-        newRetracementArray
+        newRetracementArray,
+        extraDateAddedIndex,
+        extraDateAddedDate
       ) {
         const dateArray = dateArrayReceive.map(
           (dateString) => new Date(dateString)
         );
 
         let FinalArray = new Array();
-
+        if (extraDateAddedIndex != -1) {
+          FinalArray[extraDateAddedIndex * 2] = {
+            date: extraDateAddedDate,
+            price: "Holiday",
+            lossprofit: "Holiday",
+            monowave: "Holiday",
+            retracement: "Holiday",
+          };
+          FinalArray[extraDateAddedIndex * 2 + 1] = {
+            date: extraDateAddedDate,
+            price: "Holiday",
+            lossprofit: "Holiday",
+            monowave: "Holiday",
+            retracement: "Holiday",
+          };
+        }
+        let a = 0;
         for (let i = 0; i < openPrices.length; i++) {
-          FinalArray[i] = {
+          if (a == extraDateAddedIndex * 2) {
+            a = a + 2;
+          }
+          FinalArray[a] = {
             date: dateArrayReceive[i],
             price: openPrices[i],
             lossprofit: lossProfitArray[i],
             monowave: MonowaveArray[i],
             retracement: newRetracementArray[i],
           };
+          a++;
         }
 
         const tableBody = document.getElementById("tableBody");
@@ -412,8 +433,12 @@
           // Add value, loss/profit, monowave, and retracement cells (you can replace these with your actual data)
 
           const valueCell = document.createElement("td");
-          if (date.price == "EMpty") {
-            valueCell.textContent = "";
+          if (date.price == "EMpty" || date.price == "Holiday") {
+            if (date.price == "Holiday") {
+              valueCell.textContent = "Holiday";
+            } else {
+              valueCell.textContent = "";
+            }
           } else {
             let FinalPrice = parseFloat(date.price.toFixed(3));
             valueCell.textContent = FinalPrice;
@@ -421,8 +446,12 @@
           row.appendChild(valueCell);
 
           const lossProfitCell = document.createElement("td");
-          if (date.lossprofit == "EMpty") {
-            lossProfitCell.textContent = "";
+          if (date.lossprofit == "EMpty" || date.lossprofit == "Holiday") {
+            if (date.lossprofit == "Holiday") {
+              lossProfitCell.textContent = "Holiday";
+            } else {
+              lossProfitCell.textContent = "";
+            }
           } else {
             let FinalPrice = parseFloat(date.lossprofit.toFixed(3));
 
@@ -431,8 +460,12 @@
           row.appendChild(lossProfitCell);
 
           const monowaveCell = document.createElement("td");
-          if (date.monowave == "EMpty") {
-            monowaveCell.textContent = "";
+          if (date.monowave == "EMpty" || date.monowave == "Holiday") {
+            if (date.monowave == "Holiday") {
+              monowaveCell.textContent = "Holiday";
+            } else {
+              monowaveCell.textContent = "";
+            }
           } else {
             let FinalPrice = Math.abs(parseFloat(date.monowave.toFixed(3)));
 
@@ -441,8 +474,12 @@
           row.appendChild(monowaveCell);
 
           const retracementCell = document.createElement("td");
-          if (date.retracement == "EMpty") {
-            retracementCell.textContent = "";
+          if (date.retracement == "EMpty" || date.retracement == "Holiday") {
+            if (date.retracement == "Holiday") {
+              retracementCell.textContent = "Holiday";
+            } else {
+              retracementCell.textContent = "";
+            }
           } else {
             let FinalPrice = parseFloat(date.retracement.toFixed(3));
 
@@ -498,8 +535,14 @@
         MonowaveArray[0] = "EMpty";
         let plus_sum = 0;
         let minus_sum = 0;
-
+        let extraDateAddedIndex = -1;
+        let extraDateAddedDate;
         for (let i = 0; i < apiData.length; i++) {
+          if (apiData[i]["Open"] == "null") {
+            extraDateAddedIndex = i;
+            extraDateAddedDate = new Date(apiData[i]["Date"]);
+            continue;
+          }
           newDates[ss] = new Date(apiData[i]["Date"]);
           ss++;
           newDates[ss] = new Date(apiData[i]["Date"]);
@@ -648,7 +691,10 @@
           }
         }
 
+     
+
         LINEDRAWCHART(openPrices, LabelsArray);
+
         document.getElementById("loadingIndicator").style.display = "none"; // Hide loading indicator
         canvas.style.display = "block";
         fillTable(
@@ -656,7 +702,9 @@
           openPrices,
           lossProfitArray,
           MonowaveArray,
-          RetracementArray
+          RetracementArray,
+          extraDateAddedIndex,
+          extraDateAddedDate
         );
       }
 
@@ -791,7 +839,7 @@
             .attr("width", width)
             .attr("height", height)
             .attr("fill", "none")
-            .attr("pointer-events", "all") // Make the overlay clickable
+            // .attr("pointer-events", "all") // Make the overlay clickable
             .style("opacity", 1);
           // Initially set opacity to 1
 
@@ -829,7 +877,6 @@
           });
 
           svg.on("mousemove", function () {
-            console.log("mousemove");
             if (!isDrawing) return;
             const [x, y] = d3.mouse(this);
             ab = x;
@@ -845,7 +892,6 @@
           });
 
           svg.on("mouseup", function () {
-            console.log("mouseup");
 
             isDrawing = false;
 
@@ -858,12 +904,10 @@
 
         // Buttons to enable drawing mode for rectangles and lines
         d3.select("#drawRectangleBtn").on("click", function () {
-          console.log("rectangle");
           enableDrawing("rectangle");
         });
 
         d3.select("#drawLineBtn").on("click", function () {
-          console.log("line");
           enableDrawing("line");
         });
       }
@@ -876,7 +920,7 @@
         svg.on("mouseup", null);
         svg.on("mouseover", null);
         svg.on("mouseout", null);
-        LINEDRAWCHART(openPrices, LabelsArray);
+        svg.select("#overlay").remove();
       }
     </script>
   </body>
