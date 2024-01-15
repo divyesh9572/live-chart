@@ -266,7 +266,6 @@
       .search-results.show {
         display: block;
       }
-      
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/Chart.min.js"></script>
@@ -355,9 +354,14 @@
         <!-- style="position: relative; z-index: 1" -->
         <div width="1000" height="400" style="position: relative; z-index: 1">
           <canvas id="lineChart"></canvas>
-          <div style="max-width: 1000px; margin: 20px auto; ">
-            <canvas id="volumeChart" width="400" height="200" style="background-color: white;"></canvas>
-        </div>
+          <div style="max-width: 1000px; margin: 20px auto">
+            <canvas
+              id="volumeChart"
+              width="400"
+              height="200"
+              style="background-color: white"
+            ></canvas>
+          </div>
           <div
             id="chart-containerdraw"
             style="position: absolute; top: 0; left: 0; z-index: 2"
@@ -373,7 +377,8 @@
               <th>Value</th>
               <th>Loss/Profit</th>
               <th>Monowave</th>
-              <th>Retracement (%)</th>
+              <th>Retracement (%)M1</th>
+              <th>Retracement (%)M1 - 1</th>
             </tr>
           </thead>
           <!-- Table body will be dynamically generated using JavaScript -->
@@ -383,75 +388,74 @@
     </div>
 
     <script>
-      
-        function createVolumeChart(volumeArray , volumeDataArray) {
-          console.log("called divyesh");
-          const volumeData = {
-            labels: volumeDataArray.map((date)=>date),
-            datasets: [{
-                label: 'Volume',
-                data: volumeArray.map((volumeData)=>volumeData),
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
+      function createVolumeChart(volumeArray, volumeDataArray) {
+        console.log("called divyesh");
+        const volumeData = {
+          labels: volumeDataArray.map((date) => date),
+          datasets: [
+            {
+              label: "Volume",
+              data: volumeArray.map((volumeData) => volumeData),
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
         };
 
-            const ctx = document.getElementById('volumeChart').getContext('2d');
-            const existingChart = Chart.getChart(ctx);
+        const ctx = document.getElementById("volumeChart").getContext("2d");
+        const existingChart = Chart.getChart(ctx);
 
-            if (existingChart) {
-                existingChart.destroy();
-            }
-            const myChart = new Chart(ctx, {
-                type: 'bar',
-                data: volumeData,
-                options: {
-                    scales: {
-                        x: {
-                            type: 'category',
-                            position: 'bottom'
-                        },
-                        y: {
-                            beginAtZero: false,
-                            // Specify the step size for y-axis ticks
-                            stepSize: 50000,
-                            ticks: {
-                                callback: function (value) {
-                                    return value.toLocaleString();
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Volume'
-                            },
-                            grid: {
-                                display: true
-                            }
-                        }
-                    },
-                    plugins: {
-                        zoom: {
-                            zoom: {
-                                wheel: {
-                                    enabled: true
-                                },
-                                pinch: {
-                                    enabled: true
-                                },
-                                mode: 'y'
-                            },
-                            pan: {
-                                enabled: true,
-                                mode: 'y'
-                            }
-                        }
-                    }
-                }
-            });
+        if (existingChart) {
+          existingChart.destroy();
         }
-
-       
+        const myChart = new Chart(ctx, {
+          type: "bar",
+          data: volumeData,
+          options: {
+            scales: {
+              x: {
+                type: "category",
+                position: "bottom",
+              },
+              y: {
+                beginAtZero: false,
+                // Specify the step size for y-axis ticks
+                stepSize: 1000,
+                ticks: {
+                  callback: function (value) {
+                    return value.toLocaleString();
+                  },
+                },
+                title: {
+                  display: true,
+                  text: "Volume",
+                },
+                grid: {
+                  display: true,
+                },
+              },
+            },
+            plugins: {
+              zoom: {
+                zoom: {
+                  wheel: {
+                    enabled: true,
+                  },
+                  pinch: {
+                    enabled: true,
+                  },
+                  mode: "y",
+                },
+                pan: {
+                  enabled: true,
+                  mode: "y",
+                },
+              },
+            },
+          },
+        });
+      }
 
       let VALOFDRAWINGCHART;
       function login() {
@@ -2875,8 +2879,11 @@
         MonowaveArray,
         newRetracementArray,
         extraDateAddedIndex,
-        extraDateAddedDate
+        extraDateAddedDate,
+        Retracement2
       ) {
+        console.log(newRetracementArray);
+        console.log(Retracement2);
         const dateArray = dateArrayReceive.map(
           (dateString) => new Date(dateString)
         );
@@ -2889,6 +2896,7 @@
             lossprofit: "Holiday",
             monowave: "Holiday",
             retracement: "Holiday",
+            retracement1: "Holiday",
           };
           FinalArray[extraDateAddedIndex * 2 + 1] = {
             date: extraDateAddedDate,
@@ -2896,6 +2904,7 @@
             lossprofit: "Holiday",
             monowave: "Holiday",
             retracement: "Holiday",
+            retracement1: "Holiday",
           };
         }
         let a = 0;
@@ -2909,6 +2918,7 @@
             lossprofit: lossProfitArray[i],
             monowave: MonowaveArray[i],
             retracement: newRetracementArray[i],
+            retracement1: Retracement2[i],
           };
           a++;
         }
@@ -2984,6 +2994,20 @@
           }
           row.appendChild(retracementCell);
 
+          const retracementCell1 = document.createElement("td");
+          if (date.retracement1 == "EMpty" || date.retracement1 == "Holiday") {
+            if (date.retracement1 == "Holiday") {
+              retracementCell1.textContent = "Holiday";
+            } else {
+              retracementCell1.textContent = "";
+            }
+          } else {
+            let FinalPrice = parseFloat(date.retracement1.toFixed(3));
+
+            retracementCell1.textContent = `${FinalPrice}(%)`;
+          }
+          row.appendChild(retracementCell1);
+
           // Append the row to the table body
           tableBody.appendChild(row);
         });
@@ -3048,10 +3072,10 @@
             extraDateAddedDate = new Date(apiData[i]["Date"]);
             continue;
           }
-      volumeArray[volumeArrayIdx] = apiData[i]["Volume"];
-      volumeArrayIdx++;
-      volumeDataArray[volumeDataArrayIdx] =  (apiData[i]["Date"]);
-      volumeDataArrayIdx++;
+          volumeArray[volumeArrayIdx] = apiData[i]["Volume"];
+          volumeArrayIdx++;
+          volumeDataArray[volumeDataArrayIdx] = apiData[i]["Date"];
+          volumeDataArrayIdx++;
           newDates[ss] = new Date(apiData[i]["Date"]);
           ss++;
           newDates[ss] = new Date(apiData[i]["Date"]);
@@ -3150,16 +3174,38 @@
 
         //Retracement
         LabelsArray = new Array();
+        let Retracement2 = new Array();
         let dddd = 0;
         let RetracementArray = new Array();
+
         for (let i = 0; i <= index; i++) {
           RetracementArray[i] = "EMpty";
+          Retracement2[i] = "EMpty";
           LabelsArray[dddd] = {
             date: newDates[i],
             persontage: "",
             value: openPrices[i],
           };
           dddd++;
+        }
+
+        Retracement2[index + 1] = "EMpty";
+        for (let i = index + 2; i < MonowaveArray.length; i++) {
+          if (MonowaveArray[i] == "EMpty") {
+            Retracement2[i] = "EMpty";
+          } else {
+            let find = i - 1;
+            while (MonowaveArray[find] == "EMpty") {
+                find--;
+              }
+            let a = find - 1;
+            while (MonowaveArray[a] == "EMpty") {
+                a--;
+              }
+            Retracement2[i] = Math.abs(
+              (MonowaveArray[i] * 100) / MonowaveArray[a]
+            );
+          }
         }
 
         for (let i = index + 1; i < MonowaveArray.length; i++) {
@@ -3201,11 +3247,10 @@
         }
 
         LINEDRAWCHART(openPrices, LabelsArray);
-        console.log(volumeArray);
-        console.log(volumeDataArray);
+        console.log(Retracement2);
         document.getElementById("loadingIndicator").style.display = "none"; // Hide loading indicator
         canvas.style.display = "block";
-        createVolumeChart(volumeArray , volumeDataArray);
+        createVolumeChart(volumeArray, volumeDataArray);
         fillTable(
           newDates,
           openPrices,
@@ -3213,7 +3258,8 @@
           MonowaveArray,
           RetracementArray,
           extraDateAddedIndex,
-          extraDateAddedDate
+          extraDateAddedDate,
+          Retracement2
         );
       }
 
