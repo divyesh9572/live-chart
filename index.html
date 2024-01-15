@@ -269,6 +269,8 @@
       
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/0.7.8/chartjs-plugin-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -353,6 +355,9 @@
         <!-- style="position: relative; z-index: 1" -->
         <div width="1000" height="400" style="position: relative; z-index: 1">
           <canvas id="lineChart"></canvas>
+          <div style="max-width: 1000px; margin: 20px auto; ">
+            <canvas id="volumeChart" width="400" height="200" style="background-color: white;"></canvas>
+        </div>
           <div
             id="chart-containerdraw"
             style="position: absolute; top: 0; left: 0; z-index: 2"
@@ -378,6 +383,76 @@
     </div>
 
     <script>
+      
+        function createVolumeChart(volumeArray , volumeDataArray) {
+          console.log("called divyesh");
+          const volumeData = {
+            labels: volumeDataArray.map((date)=>date),
+            datasets: [{
+                label: 'Volume',
+                data: volumeArray.map((volumeData)=>volumeData),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+
+            const ctx = document.getElementById('volumeChart').getContext('2d');
+            const existingChart = Chart.getChart(ctx);
+
+            if (existingChart) {
+                existingChart.destroy();
+            }
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: volumeData,
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category',
+                            position: 'bottom'
+                        },
+                        y: {
+                            beginAtZero: false,
+                            // Specify the step size for y-axis ticks
+                            stepSize: 50000,
+                            ticks: {
+                                callback: function (value) {
+                                    return value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Volume'
+                            },
+                            grid: {
+                                display: true
+                            }
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            zoom: {
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'y'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'y'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+       
+
       let VALOFDRAWINGCHART;
       function login() {
         const email = document.getElementById("email").value;
@@ -2945,9 +3020,14 @@
           cd.appendChild(a);
           document.getElementById("Error").style.marginTop = "250px";
         }
+        console.log(apiData);
         openPrices = new Array();
         const newDates = new Array();
         let lossProfitArray = new Array();
+        let volumeArray = new Array();
+        let volumeDataArray = new Array();
+        let volumeArrayIdx = 0;
+        let volumeDataArrayIdx = 0;
         let filllossProfitArray = 0;
         let BIGCOUNTER = 0;
         let ss = 0;
@@ -2968,6 +3048,10 @@
             extraDateAddedDate = new Date(apiData[i]["Date"]);
             continue;
           }
+      volumeArray[volumeArrayIdx] = apiData[i]["Volume"];
+      volumeArrayIdx++;
+      volumeDataArray[volumeDataArrayIdx] =  (apiData[i]["Date"]);
+      volumeDataArrayIdx++;
           newDates[ss] = new Date(apiData[i]["Date"]);
           ss++;
           newDates[ss] = new Date(apiData[i]["Date"]);
@@ -3117,9 +3201,11 @@
         }
 
         LINEDRAWCHART(openPrices, LabelsArray);
-
+        console.log(volumeArray);
+        console.log(volumeDataArray);
         document.getElementById("loadingIndicator").style.display = "none"; // Hide loading indicator
         canvas.style.display = "block";
+        createVolumeChart(volumeArray , volumeDataArray);
         fillTable(
           newDates,
           openPrices,
